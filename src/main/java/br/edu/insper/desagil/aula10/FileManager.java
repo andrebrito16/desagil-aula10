@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
@@ -31,13 +32,11 @@ public class FileManager {
 	// Não precisa entender o código acima. (mas
 	// claro que pode perguntar se estiver curioso)
 
-	public String load(String path) {
-		String content;
 
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), decoder));
-			log.add("Leitor aberto");
+	public String load(String path) throws LoadException {
+		String content = null;
 
+		try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), decoder))) {
 			String line;
 			StringBuilder builder = new StringBuilder();
 			while ((line = reader.readLine()) != null) {
@@ -46,31 +45,22 @@ public class FileManager {
 			content = builder.toString();
 			log.add("Conteúdo lido");
 
-			reader.close();
-			log.add("Leitor fechado");
 		} catch (FileNotFoundException exception) {
-			log.add("Arquivo não encontrado: " + exception.getMessage());
-			content = null;
+			throw new LoadException("Arquivo não encontrado: " + exception.getMessage());
 		} catch (IOException exception) {
-			log.add("Erro de leitura: " + exception.getMessage());
-			content = null;
+			throw new LoadException("Erro de leitura: " + exception.getMessage());
 		}
 
 		return content;
 	}
 
-	public void save(String path, String content) {
-		try {
-			FileWriter writer = new FileWriter(path);
-			log.add("Escritor aberto");
-
+	public void save(String path, String content) throws SaveException {
+		try (FileWriter writer = new FileWriter(path)) {
 			writer.write(content);
 			log.add("Conteúdo escrito");
 
-			writer.close();
-			log.add("Escritor fechado");
 		} catch (IOException exception) {
-			log.add("Erro de escrita: " + exception.getMessage());
+			throw new SaveException("Erro de escrita: " + exception.getMessage());
 		}
 	}
 }
